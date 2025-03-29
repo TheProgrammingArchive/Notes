@@ -1,2 +1,4 @@
 .venv
 activate.bat
+.gitignore
+.idea

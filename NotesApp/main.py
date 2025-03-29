@@ -65,7 +65,7 @@ def create_note(note: NoteBase, user: Annotated[UserDB, Depends(get_logged_user)
     raise HTTPException(detail="User not found", status_code=404)
 
 
-@app.post('/view_notes')
+@app.post('/view_notes', response_model=list[NoteBase])
 def view_notes(user: Annotated[UserDB, Depends(get_logged_user)]):
     if user is not None:
         return user.notes
@@ -113,5 +113,5 @@ def remove_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)],
         session.commit()
         return {'successful_delete': True}
 
-    except AttributeError:
+    except Exception as e:
         raise HTTPException(detail='Invalid note id', status_code=404)
