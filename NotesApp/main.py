@@ -98,3 +98,20 @@ def update_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)],
 
     except AttributeError:
         raise HTTPException(detail="Invalid note id", status_code=404)
+
+
+@app.delete('/remove_note/{note_id}')
+def remove_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)], session: SessionDep):
+    try:
+        note_delete = None
+        for note in user.notes:
+            if note.idx == note_id:
+                note_delete = note
+                break
+
+        session.delete(note_delete)
+        session.commit()
+        return {'successful_delete': True}
+
+    except AttributeError:
+        raise HTTPException(detail='Invalid note id', status_code=404)
