@@ -1,32 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Mogus</title>
-
-    <style>
-        .center {
-          margin: auto;
-          width: 60%;
-          border: 3px solid #73AD21;
-          padding: 10px;
-        }
-    </style>
-
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <style>
+    form { max-width: 300px; margin: 50px auto; }
+    div { margin-bottom: 10px; }
+    label { display: block; }
+    input { width: 100%; padding: 8px; }
+    button { padding: 8px 12px; }
+    #message { text-align: center; margin-top: 20px; }
+  </style>
 </head>
 <body>
-    <form id="login_form" class="center">
-        <label for="username"> Username </label><br>
-        <input type="text" id="username" name="username" required><br>
-        <label for="password"> Password </label><br>
-        <input type="text" id="password" name="password" required>
+  <h2 style="text-align: center;">Login</h2>
+  <form id="loginForm">
+    <div>
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required>
+    </div>
+    <div>
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+    <button type="submit">Login</button>
+  </form>
+  <div id="message"></div>
 
-        <button type="submit"> Login </button>
-    </form>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      const formData = new URLSearchParams(new FormData(this));
+      const messageEl = document.getElementById('message');
 
-    <script>
-        document.get
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData
+        });
 
-    </script>
+        if (!response.ok) {
+          messageEl.textContent = 'Login failed';
+          return;
+        }
+
+        const data = await response.json();
+        localStorage.setItem('access_token', data.access_token);
+        alert(data.access_token);
+      } catch (error) {
+        messageEl.textContent = 'Error: ' + error;
+      }
+    });
+  </script>
 </body>
 </html>
