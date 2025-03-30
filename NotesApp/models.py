@@ -16,6 +16,7 @@ class NoteUpdate(NoteBase):
     title: Union[str, None] = None
     content: Union[str, None] = None
 
+
 class UserBase(SQLModel):
     username: str = Field(max_length=50, index=True)
     full_name: Union[str, None] = Field(default=None)

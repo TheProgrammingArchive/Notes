@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Query, Path, Form, Depends, status
+from fastapi import FastAPI, Query, Path, Form, Depends, status, Request
+from fastapi.templating import Jinja2Templates
 from typing import Union, Annotated
 from fastapi.responses import HTMLResponse
 from fastapi.exceptions import HTTPException
@@ -17,6 +18,7 @@ def startup():
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
+templates = Jinja2Templates(directory="templates")
 
 
 @app.post('/create_user/', response_model=UserBase)
@@ -115,3 +117,13 @@ def remove_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)],
 
     except Exception as e:
         raise HTTPException(detail='Invalid note id', status_code=404)
+
+
+@app.get('/lgin')
+def login_test(request: Request):
+    return templates.TemplateResponse('login.html', {'request': request})
+
+# # App routes
+# @app.get('/')
+# def home_page(request: Request):
+#     return templates.TemplateResponse('main.html', {'request': request, 'message': "Hi"})
