@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+
+    <script>
+        alert('Checking for access token');
+        if (!localStorage.getItem('access_token')){
+            window.location.href = '/lgin';
+        }
+        else{
+            alert(localStorage.getItem('access_token'));
+        }
+    </script>
+
+</head>
+<body>
+
+</body>
+</html>

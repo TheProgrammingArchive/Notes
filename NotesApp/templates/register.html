@@ -3,8 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>Register</title>
+
+    <style>
+        form { max-width: 300px; margin: 50px auto; }
+        div { margin-bottom: 10px; }
+        label { display: block; }
+        input { width: 100%; padding: 8px; }
+        button { padding: 8px 12px; }
+        #message { text-align: center; margin-top: 20px; }
+    </style>
+
 </head>
 <body>
-
+    <form class="form">
+        <div>
+            <label for="username">Username</label><br>
+            <input type="text" id="username" name="username" required><br>
+        </div>
+        <div>
+            <label for="password">Password</label><br>
+            <input type="text" id="password" name="password" required><br>
+        </div>
+    </form>
 </body>
 </html>

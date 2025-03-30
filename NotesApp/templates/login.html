@@ -48,6 +48,7 @@
         const data = await response.json();
         localStorage.setItem('access_token', data.access_token);
         alert(data.access_token);
+        window.location.href = '/';
       } catch (error) {
         messageEl.textContent = 'Error: ' + error;
       }

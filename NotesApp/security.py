@@ -50,7 +50,7 @@ def get_usr_from_db(username, session: SessionDep):
 
 def authenticate_user(username: str, password: str, session: SessionDep):
     user = get_usr_from_db(username, session)
-    print(password, verify_pwd(password, user.encrypted_pwd))
+    # print(password, verify_pwd(password, user.encrypted_pwd))
     if not user or not verify_pwd(password, user.encrypted_pwd):
         raise HTTPException(detail="Invalid username or password", status_code=404)
 

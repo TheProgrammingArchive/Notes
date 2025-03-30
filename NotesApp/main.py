@@ -21,8 +21,20 @@ SessionDep = Annotated[Session, Depends(get_session)]
 templates = Jinja2Templates(directory="templates")
 
 
+def validate_username(username: str, session: SessionDep):
+    users = session.exec(select(UserDB)).all()
+    for user in users:
+        if user.username == username:
+            return False
+
+    return True
+
+
 @app.post('/create_user/', response_model=UserBase)
 def create_user(user: UserCreate, session: SessionDep):
+    if not validate_username(user.username, session):
+        raise HTTPException(detail="Username Exists", status_code=404)
+
     user.encrypted_pwd = encrypt_pwd(user.encrypted_pwd)
     user = UserDB.model_validate(user)
     session.add(user)
@@ -67,7 +79,7 @@ def create_note(note: NoteBase, user: Annotated[UserDB, Depends(get_logged_user)
     raise HTTPException(detail="User not found", status_code=404)
 
 
-@app.post('/view_notes', response_model=list[NoteBase])
+@app.get('/view_notes', response_model=list[NoteBase])
 def view_notes(user: Annotated[UserDB, Depends(get_logged_user)]):
     if user is not None:
         return user.notes
@@ -119,11 +131,12 @@ def remove_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)],
         raise HTTPException(detail='Invalid note id', status_code=404)
 
 
+# App routes
 @app.get('/lgin')
 def login_test(request: Request):
     return templates.TemplateResponse('login.html', {'request': request})
 
-# # App routes
-# @app.get('/')
-# def home_page(request: Request):
-#     return templates.TemplateResponse('main.html', {'request': request, 'message': "Hi"})
+
+@app.get('/')
+def home_page(request: Request):
+    return templates.TemplateResponse('home.html', {'request': request})
