@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, Path, Form, Depends, status, Request
+from fastapi import FastAPI, Query, Path, Form, Depends, status, Request, Response
 from fastapi.templating import Jinja2Templates
 from typing import Union, Annotated
 from fastapi.responses import HTMLResponse
@@ -6,7 +6,7 @@ from fastapi.exceptions import HTTPException
 from models import UserBase, UserDB, Notes, UserCreate, NoteBase, NoteUpdate
 from crud import create_all, get_session
 from sqlmodel import select, Session
-from security import get_logged_user, OAuth2PasswordRequestForm, authenticate_user, Token, create_access_token, \
+from security import get_logged_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token, \
     encrypt_pwd
 
 app = FastAPI()
@@ -30,10 +30,10 @@ def validate_username(username: str, session: SessionDep):
     return True
 
 
-@app.post('/create_user/', response_model=UserBase)
+@app.post('/create_user/', response_model=UserDB)
 def create_user(user: UserCreate, session: SessionDep):
     if not validate_username(user.username, session):
-        return None
+        raise HTTPException(detail="Username already exists", status_code=404)
 
     user.encrypted_pwd = encrypt_pwd(user.encrypted_pwd)
     user = UserDB.model_validate(user)
@@ -45,7 +45,7 @@ def create_user(user: UserCreate, session: SessionDep):
 
 
 @app.post('/login')
-def login_page(data: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep):
+def login_page(request: Request, response: Response, data: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep):
     user = authenticate_user(data.username, data.password, session=session)
     if not user:
         raise HTTPException(
@@ -56,7 +56,8 @@ def login_page(data: Annotated[OAuth2PasswordRequestForm, Depends()], session: S
 
     access_token = create_access_token({'sub': user.username})
     # return get_logged_user(Token(token_content=access_token, token_type='bearer').token_content, session)
-    return Token(access_token=access_token, token_type='bearer')
+    response.set_cookie(key='access_token', value=access_token, httponly=True)
+    return access_token
 
 
 @app.get('/view_all/', response_model=list[UserDB])
@@ -132,7 +133,7 @@ def remove_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)],
 
 
 # App routes
-@app.get('/lgin')
+@app.post('/lgin')
 def login_test(request: Request):
     return templates.TemplateResponse('login.html', {'request': request})
 

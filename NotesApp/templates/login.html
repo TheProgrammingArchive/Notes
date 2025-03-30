@@ -14,7 +14,7 @@
 </head>
 <body>
   <h2 style="text-align: center;">Login</h2>
-  <form id="loginForm">
+  <form id="loginForm" method="post" action="/login">
     <div>
       <label for="username">Username:</label>
       <input type="text" id="username" name="username" required>
@@ -26,33 +26,5 @@
     <button id="submit">Login</button>
   </form>
   <div id="message"></div>
-
-  <script>
-    document.getElementById('loginForm').addEventListener('submit', async function(event) {
-      event.preventDefault();
-      const formData = new URLSearchParams(new FormData(this));
-      const messageEl = document.getElementById('message');
-
-      try {
-        const response = await fetch('/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: formData
-        });
-
-        if (!response.ok) {
-          messageEl.textContent = 'Login failed';
-          return;
-        }
-
-        const data = await response.json();
-        localStorage.setItem('access_token', data.access_token);
-        alert(data.access_token);
-        window.location.href = '/';
-      } catch (error) {
-        messageEl.textContent = 'Error: ' + error;
-      }
-    });
-  </script>
 </body>
 </html>

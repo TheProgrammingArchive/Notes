@@ -3,8 +3,8 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Union
-from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import Depends, FastAPI, HTTPException, status, Cookie
+from fastapi.security import OAuth2PasswordBearer, APIKeyCookie, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from crud import Session, get_session, select
 from models import UserDB
@@ -15,14 +15,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
+cookie_scheme = APIKeyCookie(name='access_token')
 
 def verify_pwd(text_pwd: str, encrypted_pwd: str):
     return pwd_context.verify(text_pwd, encrypted_pwd)
@@ -57,7 +52,7 @@ def authenticate_user(username: str, password: str, session: SessionDep):
     return user
 
 
-def get_logged_user(token: Annotated[str, Depends(oauth2_scheme)], session: SessionDep):
+def get_logged_user(token: Annotated[str, Depends(cookie_scheme)], session: SessionDep):
     print(token)
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
