@@ -32,3 +32,4 @@ class UserDB(UserBase, table=True):
 
 class UserCreate(UserBase):
     encrypted_pwd: str = Field(default=None)
+    
