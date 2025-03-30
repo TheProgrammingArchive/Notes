@@ -29,7 +29,5 @@ class UserDB(UserBase, table=True):
 
     notes: Union[None, list[Notes]] = Relationship(back_populates="user")
 
-
 class UserCreate(UserBase):
-    encrypted_pwd: str = Field(default=None)
-    
+    encrypted_pwd: str = Field()
