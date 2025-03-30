@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Query, Path, Form, Depends, status, Request, Response
+from fastapi import FastAPI, Depends, status, Request, Response
 from fastapi.templating import Jinja2Templates
 from typing import Union, Annotated
-from fastapi.responses import HTMLResponse
+from fastapi.responses import RedirectResponse
 from fastapi.exceptions import HTTPException
 from models import UserBase, UserDB, Notes, UserCreate, NoteBase, NoteUpdate
 from crud import create_all, get_session
@@ -45,7 +45,7 @@ def create_user(user: UserCreate, session: SessionDep):
 
 
 @app.post('/login')
-def login_page(request: Request, response: Response, data: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep):
+def login_page(data: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep):
     user = authenticate_user(data.username, data.password, session=session)
     if not user:
         raise HTTPException(
@@ -55,10 +55,10 @@ def login_page(request: Request, response: Response, data: Annotated[OAuth2Passw
         )
 
     access_token = create_access_token({'sub': user.username})
-    # return get_logged_user(Token(token_content=access_token, token_type='bearer').token_content, session)
-    response.set_cookie(key='access_token', value=access_token, httponly=True)
-    return access_token
+    redirect_response = RedirectResponse(url='/', status_code=303)
+    redirect_response.set_cookie(key='access_token', value=access_token, httponly=True)
 
+    return redirect_response
 
 @app.get('/view_all/', response_model=list[UserDB])
 def view_all(session: SessionDep):
@@ -133,7 +133,7 @@ def remove_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)],
 
 
 # App routes
-@app.post('/lgin')
+@app.get('/lgin')
 def login_test(request: Request):
     return templates.TemplateResponse('login.html', {'request': request})
 
@@ -142,6 +142,13 @@ def login_test(request: Request):
 def register(request: Request):
     return templates.TemplateResponse('register.html', {'request': request})
 
+
+@app.get('/logout')
+def logout():
+    response = RedirectResponse('/lgin')
+    response.delete_cookie(key='access_token')
+    return response
+
 @app.get('/')
-def home_page(request: Request):
-    return templates.TemplateResponse('home.html', {'request': request})
+def home_page(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]):
+    return templates.TemplateResponse('home.html', {'request': request, 'username': user.username})

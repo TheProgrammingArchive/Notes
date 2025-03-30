@@ -11,8 +11,19 @@
     button { padding: 8px 12px; }
     #message { text-align: center; margin-top: 20px; }
   </style>
+
+  <script>
+    function some_alert(message){
+      alert(message);
+    }
+  </script>
+
 </head>
 <body>
+  {% if message %}
+    {{ message }}
+  {% endif %}
+
   <h2 style="text-align: center;">Login</h2>
   <form id="loginForm" method="post" action="/login">
     <div>
