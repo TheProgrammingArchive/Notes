@@ -15,15 +15,62 @@
 
 </head>
 <body>
-    <form class="form">
+    <form class="form" id="register_form">
         <div>
             <label for="username">Username</label><br>
             <input type="text" id="username" name="username" required><br>
         </div>
         <div>
-            <label for="password">Password</label><br>
-            <input type="text" id="password" name="password" required><br>
+            <label for="encrypted_pwd">Password</label><br>
+            <input type="text" id="encrypted_pwd" name="encrypted_pwd" required><br>
         </div>
+        <div>
+            <label for="full_name"> Full Name </label><br>
+            <input type="text" id="full_name" name="full_name" placeholder="john doe"><br>
+        </div>
+        <div>
+            <label for="age"> Age </label><br>
+            <input type="number" id="age" name="age" placeholder="0"><br>
+        </div>
+        <button id="submit">Submit</button>
     </form>
+
+    <script>
+        document.getElementById('register_form').addEventListener('submit', async function(event){
+            event.preventDefault();
+            const formData = new FormData(this);
+            if (!formData.get('age')){
+                formData['age'] = null;
+            }
+            if (!formData.get('full_name')){
+                formData['full_name'] = null;
+            }
+
+            const fDjson = JSON.stringify(Object.fromEntries(formData));
+            alert(fDjson);
+
+            try{
+                const response = await fetch('/create_user/', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: fDjson
+                });
+
+                const resp = await response.json();
+                if (resp === null){
+                    alert("Username Already exists");
+                }
+                else{
+                    alert(JSON.stringify(resp));
+                }
+            }
+            catch(error){
+                alert("JHHIIJ" + error);
+                console.log(error);
+            }
+        });
+    </script>
 </body>
 </html>

@@ -33,7 +33,7 @@ def validate_username(username: str, session: SessionDep):
 @app.post('/create_user/', response_model=UserBase)
 def create_user(user: UserCreate, session: SessionDep):
     if not validate_username(user.username, session):
-        raise HTTPException(detail="Username Exists", status_code=404)
+        return None
 
     user.encrypted_pwd = encrypt_pwd(user.encrypted_pwd)
     user = UserDB.model_validate(user)
@@ -136,6 +136,10 @@ def remove_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)],
 def login_test(request: Request):
     return templates.TemplateResponse('login.html', {'request': request})
 
+
+@app.get('/register')
+def register(request: Request):
+    return templates.TemplateResponse('register.html', {'request': request})
 
 @app.get('/')
 def home_page(request: Request):
