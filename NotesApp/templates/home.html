@@ -110,7 +110,7 @@
     <div class="notes-container">
         {% for note in notes %}
         <div class="note-card">
-            <p class="note-title"><a href="">{{ note.title }}</a></p>
+            <p class="note-title"><a href=" {{ '/notes/%s'%note.idx }} " >{{ note.title }}</a></p>
         </div>
         {% endfor %}
     </div>

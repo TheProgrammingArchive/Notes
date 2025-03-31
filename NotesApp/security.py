@@ -65,10 +65,8 @@ def get_logged_user(token: Annotated[str, Depends(cookie_scheme)], session: Sess
         payload = jwt.decode(token, SECRET_KEY, ALGORITHM)
         usr = payload.get('sub')
         if usr is None:
-            print('No such user')
             raise credentials_exception
     except Exception:
-        print('TOken issue')
         raise credentials_exception
 
     user = get_usr_from_db(usr, session)

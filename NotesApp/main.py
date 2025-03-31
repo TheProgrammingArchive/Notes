@@ -22,12 +22,21 @@ templates = Jinja2Templates(directory="templates")
 
 @app.exception_handler(HTTPException)
 def handle_http_exception(request: Request, exc: HTTPException):
-    if exc.detail != "Username already exists or Form was filled in-correctly":
-        return templates.TemplateResponse('login.html', {'request': request, 'detail': exc.detail},
+    print(exc)
+    if exc.detail == "Username already exists or Form was filled in-correctly":
+        return templates.TemplateResponse('register.html', {'request': request, 'detail': exc.detail},
                                           status_code=exc.status_code)
 
+    elif exc.detail == 'Could not validate credentials':
+        return templates.TemplateResponse('login.html', {'request': request,
+                                                         'detail': 'You need to be logged in to access that page'},
+                                          status_code=exc.status_code)
+
+    elif exc.detail == 'Invalid Note':
+        return RedirectResponse(url='/')
+
     else:
-        return templates.TemplateResponse('register.html', {'request': request, 'detail': exc.detail})
+        return templates.TemplateResponse('login.html', {'request': request, 'detail': exc.detail})
 
 
 def validate_username(username: str, session: SessionDep):
@@ -129,24 +138,40 @@ def update_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)],
         raise HTTPException(detail="Invalid note id", status_code=404)
 
 
-@app.delete('/remove_note/{note_id}')
-def remove_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)], session: SessionDep):
-    try:
-        note_delete = None
-        for note in user.notes:
-            if note.idx == note_id:
-                note_delete = note
-                break
+# App routes
 
+@app.get('/remove_note/{note_id}')
+def remove_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)], session: SessionDep):
+    note_delete, index = None, -1
+    for k, note in enumerate(user.notes):
+        if note.idx == note_id:
+            note_delete = note
+            index = k
+            break
+
+    if note_delete is not None:
+        user.notes.pop(index)
         session.delete(note_delete)
         session.commit()
-        return {'successful_delete': True}
+        return RedirectResponse(url='/')
 
-    except Exception as e:
-        raise HTTPException(detail='Invalid note id', status_code=404)
+    raise HTTPException(detail='Could not find note to delete', status_code=404)
 
 
-# App routes
+@app.get('/notes/{note_id}')
+def get_note(request: Request, note_id: int, user: Annotated[UserDB, Depends(get_logged_user)]):
+    note = None
+    for notes in user.notes:
+        if notes.idx == note_id:
+            note = notes
+            break
+
+    if note is None:
+        raise HTTPException(detail="Invalid Note", status_code=404)
+
+    return templates.TemplateResponse('note.html', {'request': request, 'note': note})
+
+
 @app.get('/login')
 def login_test(request: Request):
     return templates.TemplateResponse('login.html', {'request': request})
@@ -164,6 +189,6 @@ def logout():
     return response
 
 
-@app.get('/', response_model=list[NoteBase])
+@app.get('/', response_model=list[Notes])
 def home_page(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]):
     return templates.TemplateResponse('home.html', {'request': request, 'notes': user.notes, 'is_logged': 'TRUE'})
