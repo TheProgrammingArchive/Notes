@@ -4,12 +4,115 @@
     <meta charset="UTF-8">
     <title>Home</title>
 
-    <script>
+    <style>
+        body {
+          font-family: 'Arial', sans-serif;
+          background: gray;
+          margin: 0;
+          padding: 20px;
+          color: #333;
+        }
 
-    </script>
+        .notes-container {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 20px;
+        }
+
+        .note-card {
+          background: #fff;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          padding: 15px;
+          transition: 0.2s
+        }
+
+        .note-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        .note-title{
+          font-size: 18px;
+          font-weight: bold;
+          margin-bottom: 10px;
+          text-align: center
+        }
+
+        .note-content {
+          font-size: 14px;
+          color: #555;
+        }
+
+        .navbar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background-color: #333;
+          padding: 10px 20px;
+          color: #fff;
+        }
+
+        /* Brand styling */
+        .navbar-brand a {
+          color: #fff;
+          text-decoration: none;
+          font-size: 20px;
+          font-weight: bold;
+        }
+
+        /* Container for buttons on the right */
+        .navbar-buttons {
+          display: flex;
+          gap: 10px;
+        }
+
+        /* Button styling */
+        .btn {
+          padding: 8px 15px;
+          background-color: #007bff;
+          color: #fff;
+          text-decoration: none;
+          border: none;
+          border-radius: 4px;
+          font-size: 14px;
+          transition: background-color 0.2s ease-in-out;
+        }
+
+        .btn:hover {
+          background-color: #0056b3;
+        }
+
+        /* Optional: Different style for Register button */
+        .btn-register {
+          background-color: #28a745;
+        }
+
+        .btn-register:hover {
+          background-color: #1e7e34;
+        }
+    </style>
 
 </head>
 <body>
-    {{ username }}
+    <header class="navbar">
+        <div class="navbar-brand"> Notes App v0.1 </div>
+        <div class="navbar-buttons">
+            {% if is_logged == 'TRUE' %}
+                <a href="/logout" class="btn">Logout</a>
+            {% else %}
+                <a href="/login" class="btn">Login</a>
+            {% endif %}
+            <a href="/new_note" class="btn">Add Note</a>
+        </div>
+    </header>
+
+    <div class="notes-container">
+        {% for note in notes %}
+        <div class="note-card">
+            <p class="note-title"><a href="">{{ note.title }}</a></p>
+        </div>
+        {% endfor %}
+    </div>
 </body>
 </html>

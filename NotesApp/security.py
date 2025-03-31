@@ -17,7 +17,8 @@ SessionDep = Annotated[Session, Depends(get_session)]
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-cookie_scheme = APIKeyCookie(name='access_token')
+
+cookie_scheme = APIKeyCookie(name='access_token', auto_error=False)
 
 def verify_pwd(text_pwd: str, encrypted_pwd: str):
     return pwd_context.verify(text_pwd, encrypted_pwd)
@@ -66,7 +67,7 @@ def get_logged_user(token: Annotated[str, Depends(cookie_scheme)], session: Sess
         if usr is None:
             print('No such user')
             raise credentials_exception
-    except InvalidTokenError:
+    except Exception:
         print('TOken issue')
         raise credentials_exception
 
