@@ -87,10 +87,10 @@ def view_all(session: SessionDep):
     return items
 
 
-@app.post('/new_note')
-def create_note(note: NoteBase, user: Annotated[UserDB, Depends(get_logged_user)], session: SessionDep):
-    print(user.full_name)
+@app.post('/create_note', response_model=NoteBase)
+def create_note(title: Annotated[str, Form()], content: Annotated[Union[str, None], Form()], user: Annotated[UserDB, Depends(get_logged_user)], session: SessionDep):
     if user is not None:
+        note = {'title': title, 'content': content}
         note = Notes.model_validate(note)
         note.user_id = user.id
 
@@ -98,9 +98,10 @@ def create_note(note: NoteBase, user: Annotated[UserDB, Depends(get_logged_user)
         session.add(note)
         session.commit()
         session.refresh(note)
-        return note
 
-    raise HTTPException(detail="User not found", status_code=404)
+        return RedirectResponse(url=f'/notes/{note.idx}', status_code=303)
+
+    raise HTTPException(detail="Not authenticated yet", status_code=404)
 
 
 @app.get('/view_notes', response_model=list[NoteBase])
@@ -139,6 +140,11 @@ def update_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)],
 
 
 # App routes
+@app.get('/new_note')
+def new_note(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]):
+    if user:
+        return templates.TemplateResponse('new_note.html', {'request': request})
+
 
 @app.get('/remove_note/{note_id}')
 def remove_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)], session: SessionDep):
