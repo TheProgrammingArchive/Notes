@@ -32,8 +32,8 @@ def handle_http_exception(request: Request, exc: HTTPException):
                                                          'detail': 'You need to be logged in to access that page'},
                                           status_code=exc.status_code)
 
-    elif exc.detail == 'Invalid Note':
-        return RedirectResponse(url='/')
+    elif exc.detail == 'Invalid note id':
+        return templates.TemplateResponse('home.html', {'request': request, 'detail': 'Requested note ID is invalid', 'is_logged': 'TRUE'})
 
     else:
         return templates.TemplateResponse('login.html', {'request': request, 'detail': exc.detail})
@@ -48,15 +48,26 @@ def validate_username(username: str, session: SessionDep):
     return True
 
 
+def get_note_id(note_id: int, user: UserDB) -> (int, Notes):
+    if user.notes is None:
+        return None
+
+    for k, note in enumerate(user.notes):
+        if note.idx == note_id:
+            return k, note
+
+    return None
+
+
 @app.post('/create_user', response_model=UserBase)
-def create_user(username: Annotated[str, Form()], encrypted_pwd: Annotated[str, Form()], age: Annotated[int, Form()],
-                full_name: Annotated[str, Form()], session: SessionDep):
+def create_user(username: Annotated[str, Form()], encrypted_pwd: Annotated[str, Form()],
+                email: Annotated[str, Form()], session: SessionDep):
     if not validate_username(username, session):
         raise HTTPException(detail="Username already exists or Form was filled in-correctly", status_code=404)
 
     encrypted_pwd = encrypt_pwd(encrypted_pwd)
     user = UserDB.model_validate({'username': username, 'encrypted_pwd': encrypted_pwd,
-                                  'age': age, 'full_name': full_name})
+                                  'email': email})
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -104,7 +115,7 @@ def create_note(title: Annotated[str, Form()], content: Annotated[Union[str, Non
     raise HTTPException(detail="Not authenticated yet", status_code=404)
 
 
-@app.get('/view_notes', response_model=list[NoteBase])
+@app.get('/view_notes', response_model=list[Notes])
 def view_notes(user: Annotated[UserDB, Depends(get_logged_user)]):
     if user is not None:
         return user.notes
@@ -112,34 +123,35 @@ def view_notes(user: Annotated[UserDB, Depends(get_logged_user)]):
     raise HTTPException(detail="User not found", status_code=404)
 
 
-@app.patch('/update_note/{note_id}')
-def update_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)], note_u: NoteUpdate,
-                session: SessionDep):
-    notes = user.notes
-    try:
-        note_update = None
-        for note in notes:
-            if note.idx == note_id:
-                note_update = note
-                break
+@app.post('/update_note_/{note_id}')
+def update_note_(request: Request, note_id: int, user: Annotated[UserDB, Depends(get_logged_user)], title: Annotated[str, Form(max_length=100)], content: Annotated[str, Form()], session: SessionDep):
+    if user is not None:
+        data = get_note_id(note_id, user)
+        if data is None:
+            raise HTTPException(detail="Invalid note id", status_code=404)
 
-        if note_u.title is not None:
-            note_update.title = note_u.title
-
-        if note_u.content is not None:
-            note_update.content = note_u.content
+        index, note_update = data
+        if title is not None:
+            note_update.title = title
+        note_update.content = content
 
         session.add(note_update)
         session.commit()
         session.refresh(note_update)
 
-        return note_update
+        return templates.TemplateResponse(f'note.html', {'request': request, 'note': note_update})
 
-    except AttributeError:
-        raise HTTPException(detail="Invalid note id", status_code=404)
+    raise HTTPException(detail='Could not validate credentials', status_code=404)
 
 
 # App routes
+@app.get('/update_note/{note_id}')
+def update_note(request: Request, note_id: int, user: Annotated[UserDB, Depends(get_logged_user)]):
+    k, note = get_note_id(note_id, user)
+    if user:
+        return templates.TemplateResponse('update_note.html', {'request': request, 'note': note})
+
+
 @app.get('/new_note')
 def new_note(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]):
     if user:
@@ -148,20 +160,16 @@ def new_note(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]
 
 @app.get('/remove_note/{note_id}')
 def remove_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)], session: SessionDep):
-    note_delete, index = None, -1
-    for k, note in enumerate(user.notes):
-        if note.idx == note_id:
-            note_delete = note
-            index = k
-            break
+    data = get_note_id(note_id, user)
 
-    if note_delete is not None:
+    if data is not None:
+        index, note_delete = data
         user.notes.pop(index)
         session.delete(note_delete)
         session.commit()
         return RedirectResponse(url='/')
 
-    raise HTTPException(detail='Could not find note to delete', status_code=404)
+    raise HTTPException(detail='Invalid note id', status_code=404)
 
 
 @app.get('/notes/{note_id}')
@@ -173,20 +181,25 @@ def get_note(request: Request, note_id: int, user: Annotated[UserDB, Depends(get
             break
 
     if note is None:
-        raise HTTPException(detail="Invalid Note", status_code=404)
+        raise HTTPException(detail="Invalid note id", status_code=404)
 
     return templates.TemplateResponse('note.html', {'request': request, 'note': note})
 
 
 @app.get('/login')
-def login_test(request: Request):
-    return templates.TemplateResponse('login.html', {'request': request})
+def login_test(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]):
+    if not user:
+        return templates.TemplateResponse('login.html', {'request': request})
+
+    return RedirectResponse(url='/')
 
 
 @app.get('/register')
-def register(request: Request):
-    return templates.TemplateResponse('register.html', {'request': request})
+def register(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]):
+    if not user:
+        return templates.TemplateResponse('register.html', {'request': request})
 
+    return RedirectResponse(url='/')
 
 @app.get('/logout')
 def logout():

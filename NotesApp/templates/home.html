@@ -16,7 +16,7 @@
         .notes-container {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 20px;
+          gap: 10px;
         }
 
         .note-card {
@@ -91,6 +91,12 @@
         .btn-register:hover {
           background-color: #1e7e34;
         }
+
+        .err{
+            text-align: center;
+            font-size: 10px;
+            color: white;
+        }
     </style>
 
 </head>
@@ -107,12 +113,18 @@
         </div>
     </header>
 
+    <br>
+
     <div class="notes-container">
         {% for note in notes %}
         <div class="note-card">
             <p class="note-title"><a href=" {{ '/notes/%s'%note.idx }} " >{{ note.title }}</a></p>
+            <p style="text-align: center; font-size:15px">{{ note.created_at }}</p>
         </div>
         {% endfor %}
     </div>
+    {% if detail %}
+        <p class="err"> {{ detail }} </p>
+    {% endif %}
 </body>
 </html>

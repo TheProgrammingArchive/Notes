@@ -85,24 +85,30 @@
             color: #555;
             line-height: 1.6;
         }
-
-
     </style>
+
+    <script>
+        function confirm_delete(){
+            var conf = confirm("Delete note?");
+            return conf;
+        }
+    </script>
 
 </head>
 <body>
     <div class="navbar">
         <div class="navbar-buttons">
             <a href="/" class="btn"> Home </a>
-            <a href="{{ '/remove_note/%s'%note.idx }}" class="btn"> Delete note </a>
-            <a href="" class="btn"> Edit note </a>
+            <a href="{{ '/remove_note/%s'%note.idx }}" class="btn" onclick="return confirm_delete();"> Delete note </a>
+            <a href="{{ '/update_note/%s'%note.idx }}" class="btn"> Edit note </a>
         </div>
     </div>
 
     <div class="content-wrapper">
         <div class="note-container">
             <div class="note-title"> {{ note.title }} </div>
-            <div class="note-content"> {{ note.content }} </div>
+            <div><p> {{ note.created_at}} </p></div><br>
+            <div class="note-content"> {{ note.content }}</div>
         </div>
     </div>
 </body>

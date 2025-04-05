@@ -50,7 +50,7 @@
         }
 
         .submit-button {
-            background-color: green;
+            background-color: blue;
             color: white;
             border: none;
             border-radius: 4px;
@@ -68,16 +68,16 @@
 </head>
 <body>
     <div class="note-container">
-        <h2 style="text-align: center"> CREATE NOTE </h2>
-        <form method="post" action="/create_note/">
+        <h2 style="text-align:center"> UPDATE NOTE </h2>
+        <form method="post" action="{{ '/update_note_/%s'%note.idx }}">
            <div class="form-group">
                <label for="title"><p style="font-size:15px"> Title </p></label>
-               <input type="text" name="title" id="title" required><br><br>
+               <input type="text" name="title" id="title" value="{{ note.title }}" required><br><br>
 
                <label for="content"><p style="font-size:15px"> Content </p></label>
-               <textarea id="content" name="content" placeholder="Type your note here..."></textarea>
+               <textarea id="content" name="content">{{ note.content }}</textarea>
            </div>
-           <button type="submit" class="submit-button"> Create note </button>
+           <button type="submit" class="submit-button"> Update note </button>
         </form>
     </div>
 </body>

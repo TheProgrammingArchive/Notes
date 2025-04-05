@@ -5,35 +5,127 @@
     <title>Register</title>
 
     <style>
-        .form { max-width: 300px; margin: 50px auto; }
-        div { margin-bottom: 10px; }
-        label { display: block; }
-        input { width: 100%; padding: 8px; }
-        button { padding: 8px 12px; }
-        #message { text-align: center; margin-top: 20px; }
-        .message{
-          color: red;
-          border-style: dotted;
+        body {
+          background: #f5f7fa;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+        }
+
+        /* Card-style container */
+        .form-container {
+          background-color: #ffffff;
+          padding: 40px 30px;
+          border-radius: 12px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+          width: 100%;
+          max-width: 450px;
+        }
+
+        /* Form title */
+        .form-container h2 {
           text-align: center;
-          border-width: 10px;
+          color: #333;
+          margin-bottom: 30px;
+        }
+
+        /* Input field group */
+        .form-group {
+          margin-bottom: 20px;
+        }
+
+        label {
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 600;
+          color: #555;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        textarea {
+          width: 100%;
+          padding: 12px 14px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          font-size: 16px;
+          transition: border-color 0.2s ease-in-out;
+        }
+
+        input:focus {
+          border-color: #4a90e2;
+          outline: none;
+        }
+
+        /* Submit button */
+        .btn-submit {
+          width: 100%;
+          background-color: #4a90e2;
+          color: white;
+          padding: 14px;
+          border: none;
+          border-radius: 6px;
+          font-size: 16px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: background-color 0.25s ease-in-out;
+        }
+
+        .btn-submit:hover {
+          background-color: #357ab8;
+        }
+
+        /* Optional: link below the form */
+        .form-footer {
+          text-align: center;
+          margin-top: 20px;
+          color: #666;
+        }
+
+        .form-footer a {
+          color: #4a90e2;
+          text-decoration: none;
+        }
+
+        .form-footer a:hover {
+          text-decoration: underline;
         }
     </style>
 
 </head>
 <body>
-    <form class="form" method="post" action="/create_user">
-            <label for="username">Username</label><br>
-            <input type="text" id="username" name="username" required><br>
-            <label for="encrypted_pwd">Password</label><br>
-            <input type="password" id="encrypted_pwd" name="encrypted_pwd" required><br>
-            <label for="age">Age</label><br>
-            <input type="number" id="age" name="age" placeholder="0" value=0 required><br>
-            <label for="full_name"> Full Name</label><br>
-            <input type="text" id="full_name" name="full_name" placeholder="John Doe" value="John Doe" required><br><br>
-            <button id="submit"> Submit </button><br>
+    <div class="form-container">
+    <h2>Create Your Account</h2>
+    <form method="post" action="/create_user">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email">
+        </div>
+
+        <div class="form-group">
+            <label for="encrypted_pwd">Password</label>
+            <input type="password" id="encrypted_pwd" name="encrypted_pwd" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Register</button>
     </form>
+
+    <div class="form-footer">
+        Already have an account? <a href="/login">Log in</a>
+    </div>
     {% if detail %}
-        <p class="message"><strong> {{ detail }} </strong></p>
+        <p class="message" style="text-align: center"><strong> {{ detail }} </strong></p>
     {% endif %}
+    </div>
 </body>
 </html>
