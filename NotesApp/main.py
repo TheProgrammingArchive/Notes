@@ -6,7 +6,7 @@ from fastapi.exceptions import HTTPException
 from models import UserBase, UserDB, Notes, UserCreate, NoteBase, NoteUpdate
 from crud import create_all, get_session
 from sqlmodel import select, Session
-from security import get_logged_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token, encrypt_pwd
+from security import get_logged_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token, encrypt_pwd, cookie_scheme
 
 app = FastAPI()
 
@@ -187,19 +187,23 @@ def get_note(request: Request, note_id: int, user: Annotated[UserDB, Depends(get
 
 
 @app.get('/login')
-def login_test(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]):
-    if not user:
+def login_test(request: Request, token: Annotated[str, Depends(cookie_scheme)], session: SessionDep):
+    try:
+        get_logged_user(token, session)
         return templates.TemplateResponse('login.html', {'request': request})
 
-    return RedirectResponse(url='/')
+    except HTTPException:
+        return RedirectResponse(url='/')
 
 
 @app.get('/register')
-def register(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]):
-    if not user:
-        return templates.TemplateResponse('register.html', {'request': request})
+def register(request: Request, token: Annotated[str, Depends(cookie_scheme)], session: SessionDep):
+    try:
+        get_logged_user(token, session)
+        return RedirectResponse(url='/')
 
-    return RedirectResponse(url='/')
+    except HTTPException:
+        return templates.TemplateResponse('register.html', {'request': request})
 
 @app.get('/logout')
 def logout():

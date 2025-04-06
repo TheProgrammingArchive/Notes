@@ -13,7 +13,7 @@ class Notes(NoteBase, table=True):
     user_id: Optional[int] = Field(default=None, foreign_key="userdb.id")
     user: Optional["UserDB"] = Relationship(back_populates="notes")
     created_at: Union[str, None] = Field(
-        default_factory=lambda: datetime.datetime.utcnow().strftime('%B %d, %Y at %I:%M %p'))
+        default_factory=lambda: datetime.datetime.now().strftime('%B %d, %Y at %I:%M %p'))
 
 
 class NoteUpdate(NoteBase):

@@ -1,23 +1,20 @@
 from passlib.context import CryptContext
 import jwt
-from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Union
 from fastapi import Depends, FastAPI, HTTPException, status, Cookie
 from fastapi.security import OAuth2PasswordBearer, APIKeyCookie, OAuth2PasswordRequestForm
-from pydantic import BaseModel
 from crud import Session, get_session, select
 from models import UserDB
+from decouple import config
 
-SECRET_KEY = "41110a24b8c19e9ba2d97aeba65de0d30ee31b04848fc279458264d8005b2e7a"
+SECRET_KEY = config('SECRET_KEY')
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
 cookie_scheme = APIKeyCookie(name='access_token', auto_error=False)
 
 def verify_pwd(text_pwd: str, encrypted_pwd: str):

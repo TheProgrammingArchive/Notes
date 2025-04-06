@@ -5,95 +5,90 @@
     <title>Register</title>
 
     <style>
+         /* Reset box sizing and default margins */
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        /* Centering the content using flexbox */
         body {
-          background: #f5f7fa;
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          margin: 0;
-          padding: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 100vh;
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-
-        /* Card-style container */
+        /* Card-style container for the form */
         .form-container {
-          background-color: #ffffff;
-          padding: 40px 30px;
-          border-radius: 12px;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-          width: 100%;
-          max-width: 450px;
+            background-color: #ffffff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
         }
-
-        /* Form title */
+        /* Center the form title */
         .form-container h2 {
-          text-align: center;
-          color: #333;
-          margin-bottom: 30px;
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
         }
-
-        /* Input field group */
+        /* Input field group styling */
         .form-group {
-          margin-bottom: 20px;
+            margin-bottom: 20px;
         }
-
         label {
-          display: block;
-          margin-bottom: 8px;
-          font-weight: 600;
-          color: #555;
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
         }
-
         input[type="text"],
         input[type="email"],
-        input[type="password"],
-        textarea {
-          width: 100%;
-          padding: 12px 14px;
-          border: 1px solid #ccc;
-          border-radius: 6px;
-          font-size: 16px;
-          transition: border-color 0.2s ease-in-out;
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.2s ease-in-out;
         }
-
         input:focus {
-          border-color: #4a90e2;
-          outline: none;
+            border-color: #4a90e2;
+            outline: none;
         }
-
-        /* Submit button */
+        /* Submit button styling */
         .btn-submit {
-          width: 100%;
-          background-color: #4a90e2;
-          color: white;
-          padding: 14px;
-          border: none;
-          border-radius: 6px;
-          font-size: 16px;
-          font-weight: bold;
-          cursor: pointer;
-          transition: background-color 0.25s ease-in-out;
+            width: 100%;
+            background-color: #4a90e2;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.25s ease-in-out;
         }
-
         .btn-submit:hover {
-          background-color: #357ab8;
+            background-color: #357ab8;
         }
-
-        /* Optional: link below the form */
+        /* Footer text styling */
         .form-footer {
-          text-align: center;
-          margin-top: 20px;
-          color: #666;
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
         }
-
         .form-footer a {
-          color: #4a90e2;
-          text-decoration: none;
+            color: #4a90e2;
+            text-decoration: none;
         }
-
         .form-footer a:hover {
-          text-decoration: underline;
+            text-decoration: underline;
         }
     </style>
 
