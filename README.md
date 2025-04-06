@@ -1,1 +1,1 @@
-<h4> A simple web-app to create, edit and delete short notes, made with FastAPI </h4>
+<h3> A simple web-app to create, edit and delete short notes, made with FastAPI </h3>
