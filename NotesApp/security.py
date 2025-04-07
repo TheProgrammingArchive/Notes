@@ -4,8 +4,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated, Union
 from fastapi import Depends, FastAPI, HTTPException, status, Cookie
 from fastapi.security import OAuth2PasswordBearer, APIKeyCookie, OAuth2PasswordRequestForm
-from crud import Session, get_session, select
-from models import UserDB
+from .crud import Session, get_session, select
+from .models import UserDB
 from decouple import config
 
 SECRET_KEY = config('SECRET_KEY')

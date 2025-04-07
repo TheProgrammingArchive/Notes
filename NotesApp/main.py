@@ -3,10 +3,10 @@ from fastapi.templating import Jinja2Templates
 from typing import Union, Annotated
 from fastapi.responses import RedirectResponse
 from fastapi.exceptions import HTTPException
-from models import UserBase, UserDB, Notes, UserCreate, NoteBase, NoteUpdate
-from crud import create_all, get_session
+from .models import UserBase, UserDB, Notes, UserCreate, NoteBase, NoteUpdate
+from .crud import create_all, get_session
 from sqlmodel import select, Session
-from security import get_logged_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token, encrypt_pwd, cookie_scheme
+from .security import get_logged_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token, encrypt_pwd, cookie_scheme
 
 app = FastAPI()
 
@@ -28,8 +28,7 @@ def handle_http_exception(request: Request, exc: HTTPException):
                                           status_code=exc.status_code)
 
     elif exc.detail == 'Could not validate credentials':
-        return templates.TemplateResponse('login.html', {'request': request,
-                                                         'detail': 'You need to be logged in to access that page'},
+        return templates.TemplateResponse('login.html', {'request': request},
                                           status_code=exc.status_code)
 
     elif exc.detail == 'Invalid note id':
