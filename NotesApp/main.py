@@ -190,10 +190,10 @@ def get_note(request: Request, note_id: int, user: Annotated[UserDB, Depends(get
 def login_test(request: Request, token: Annotated[str, Depends(cookie_scheme)], session: SessionDep):
     try:
         get_logged_user(token, session)
-        return templates.TemplateResponse('login.html', {'request': request})
+        return RedirectResponse(url='/')
 
     except HTTPException:
-        return RedirectResponse(url='/')
+        return templates.TemplateResponse('login.html', {'request': request})
 
 
 @app.get('/register')

@@ -13,7 +13,6 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 SessionDep = Annotated[Session, Depends(get_session)]
 
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 cookie_scheme = APIKeyCookie(name='access_token', auto_error=False)
 
@@ -51,7 +50,6 @@ def authenticate_user(username: str, password: str, session: SessionDep):
 
 
 def get_logged_user(token: Annotated[str, Depends(cookie_scheme)], session: SessionDep):
-    print(token)
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
