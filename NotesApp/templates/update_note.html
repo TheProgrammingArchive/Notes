@@ -78,6 +78,9 @@
                <textarea id="content" name="content">{{ note.content }}</textarea>
            </div>
            <button type="submit" class="submit-button"> Update note </button>
+            {% if detail %}
+                <p><strong> {{ detail }} </strong></p>
+            {% endif %}
         </form>
     </div>
 </body>

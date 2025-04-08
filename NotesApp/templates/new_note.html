@@ -77,6 +77,10 @@
            </div>
            <button type="submit" class="submit-button"> Create note </button>
         </form>
+
+        {% if detail %}
+            <p> {{ detail }} </p>
+        {% endif %}
     </div>
 </body>
 </html>
