@@ -10,5 +10,4 @@ COPY ./NotesApp /code/NotesApp
 
 WORKDIR /code/NotesApp
 
-CMD ["tail", "-f", "/dev/null"]
-#CMD ["fastapi", "run", "main.py", "--port", "80"]
+CMD ["fastapi", "run", "main.py", "--port", "80"]
