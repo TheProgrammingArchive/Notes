@@ -4,10 +4,11 @@ from typing import Union, Annotated
 from fastapi.responses import RedirectResponse
 from pydantic import ValidationError
 from fastapi.exceptions import HTTPException
-from .models import UserBase, UserDB, Notes, UserCreate, NoteBase, NoteUpdate
+from .models import UserBase, UserDB, Notes, UserCreate, NoteBase, Friend
 from .crud import create_all, get_session
 from sqlmodel import select, Session
-from .security import get_logged_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token, encrypt_pwd, cookie_scheme
+from .security import get_logged_user, OAuth2PasswordRequestForm, authenticate_user, create_access_token, encrypt_pwd, \
+    cookie_scheme
 
 app = FastAPI()
 
@@ -36,7 +37,8 @@ def handle_http_exception(request: Request, exc: HTTPException):
         return templates.TemplateResponse('register.html', {'request': request, 'detail': exc.detail})
 
     elif exc.detail == 'Invalid note id':
-        return templates.TemplateResponse('home.html', {'request': request, 'detail': 'Requested note ID is invalid', 'is_logged': 'TRUE'})
+        return templates.TemplateResponse('home.html', {'request': request, 'detail': 'Requested note ID is invalid',
+                                                        'is_logged': 'TRUE'})
 
     elif exc.detail == 'Invalid note, title or content might have been too long':
         return templates.TemplateResponse('home.html', {'request': request, 'detail': exc.detail})
@@ -101,14 +103,9 @@ def login_page(data: Annotated[OAuth2PasswordRequestForm, Depends()], session: S
     return redirect_response
 
 
-@app.get('/view_all/', response_model=list[UserDB])
-def view_all(session: SessionDep):
-    items = session.exec(select(UserDB)).all()
-    return items
-
-
 @app.post('/create_note', response_model=NoteBase)
-def create_note(title: Annotated[str, Form()], content: Annotated[Union[str, None], Form()], user: Annotated[UserDB, Depends(get_logged_user)], session: SessionDep):
+def create_note(title: Annotated[str, Form()], content: Annotated[Union[str, None], Form()],
+                user: Annotated[UserDB, Depends(get_logged_user)], session: SessionDep):
     if user is not None:
         note = {'title': title, 'content': content}
         if len(title) > 50 or (content is not None and len(content) > 1000):
@@ -224,6 +221,7 @@ def register(request: Request, token: Annotated[str, Depends(cookie_scheme)], se
     except HTTPException:
         return templates.TemplateResponse('register.html', {'request': request})
 
+
 @app.get('/logout')
 def logout():
     response = RedirectResponse('/login')
@@ -234,3 +232,36 @@ def logout():
 @app.get('/', response_model=list[Notes])
 def home_page(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]):
     return templates.TemplateResponse('home.html', {'request': request, 'notes': user.notes, 'is_logged': 'TRUE'})
+
+
+# Tests
+@app.post('/add_friend', response_model=Friend)
+def add_friend(user: Annotated[UserDB, Depends(get_logged_user)], friend_id: int, session: SessionDep):
+    friend = session.exec(select(UserDB).where(UserDB.id == friend_id)).first()
+
+    if friend is not None:
+        if friend.id in [k.target_id for k in user.friends]:
+            raise HTTPException(detail='Friendship already exists', status_code=404)
+
+        rel_obj = {'target_id': friend.id, 'origin_id': user.id}
+        rel_obj = Friend.model_validate(rel_obj)
+        user.friends.append(rel_obj)
+
+        session.add(rel_obj)
+        session.commit()
+        session.refresh(rel_obj)
+
+        return rel_obj
+
+    raise HTTPException(detail="Invalid friend id", status_code=404)
+
+
+@app.get('/view_friends', response_model=list[Friend])
+def view_friends(user: Annotated[UserDB, Depends(get_logged_user)]):
+    return user.related_to
+
+
+@app.get('/view_all/', response_model=list[UserDB])
+def view_all(session: SessionDep):
+    items = session.exec(select(UserDB)).all()
+    return items
