@@ -99,13 +99,19 @@
         }
     </style>
 
+    <script>
+        function confirm_logout(){
+            return confirm("Logout?");
+        }
+    </script>
+
 </head>
 <body>
     <header class="navbar">
         <div class="navbar-brand"> Notes App v0.1 </div>
         <div class="navbar-buttons">
             {% if is_logged == 'TRUE' %}
-                <a href="/logout" class="btn">Logout</a>
+                <a href="/logout" class="btn" onclick="return confirm_logout();">Logout</a>
             {% else %}
                 <a href="/login" class="btn">Login</a>
             {% endif %}

@@ -36,6 +36,7 @@
         }
 
         input[type="text"], textarea {
+            white-space: pre-wrap;
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
@@ -45,6 +46,7 @@
         }
 
         textarea {
+            white-space: pre-wrap;
             min-height: 200px;
             resize: vertical;
         }
@@ -72,10 +74,10 @@
         <form method="post" action="{{ '/update_note_/%s'%note.idx }}">
            <div class="form-group">
                <label for="title"><p style="font-size:15px"> Title </p></label>
-               <input type="text" name="title" id="title" value="{{ note.title }}" required><br><br>
+               <input type="text" name="title" id="title" value="{{ note.title }}" maxlength="50" required><br><br>
 
                <label for="content"><p style="font-size:15px"> Content </p></label>
-               <textarea id="content" name="content">{{ note.content }}</textarea>
+               <textarea id="content" name="content" maxlength="1000">{{ note.content }}</textarea>
            </div>
            <button type="submit" class="submit-button"> Update note </button>
             {% if detail %}

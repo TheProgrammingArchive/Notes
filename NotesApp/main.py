@@ -40,9 +40,6 @@ def handle_http_exception(request: Request, exc: HTTPException):
         return templates.TemplateResponse('home.html', {'request': request, 'detail': 'Requested note ID is invalid',
                                                         'is_logged': 'TRUE'})
 
-    elif exc.detail == 'Invalid note, title or content might have been too long':
-        return templates.TemplateResponse('home.html', {'request': request, 'detail': exc.detail})
-
     else:
         return templates.TemplateResponse('login.html', {'request': request, 'detail': exc.detail})
 
@@ -72,9 +69,6 @@ def create_user(username: Annotated[str, Form()], encrypted_pwd: Annotated[str, 
                 email: Annotated[str, Form()], session: SessionDep):
     if not validate_username(username, session):
         raise HTTPException(detail="Username already exists or Form was filled in-correctly", status_code=404)
-
-    if len(username) >= 50:
-        raise HTTPException(detail="Username is too long", status_code=404)
 
     encrypted_pwd = encrypt_pwd(encrypted_pwd)
     user = UserDB.model_validate({'username': username, 'encrypted_pwd': encrypted_pwd,
@@ -108,8 +102,9 @@ def create_note(title: Annotated[str, Form()], content: Annotated[Union[str, Non
                 user: Annotated[UserDB, Depends(get_logged_user)], session: SessionDep):
     if user is not None:
         note = {'title': title, 'content': content}
+
         if len(title) > 50 or (content is not None and len(content) > 1000):
-            raise HTTPException(detail='Invalid note, title or content might have been too long', status_code=404)
+            return RedirectResponse(url='/', status_code=303)
 
         note = Notes.model_validate(note)
         note.user_id = user.id
@@ -133,7 +128,7 @@ def view_notes(user: Annotated[UserDB, Depends(get_logged_user)]):
 
 
 @app.post('/update_note_/{note_id}')
-def update_note_(request: Request, note_id: int, user: Annotated[UserDB, Depends(get_logged_user)],
+def update_note_(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)],
                  title: Annotated[str, Form()], content: Annotated[str, Form()], session: SessionDep):
     if user is not None:
         data = get_note_id(note_id, user)
@@ -144,7 +139,7 @@ def update_note_(request: Request, note_id: int, user: Annotated[UserDB, Depends
         if title is not None and len(title) <= 50:
             note_update.title = title
         else:
-            raise HTTPException(detail="Invalid note, title or content might have been too long", status_code=404)
+            return RedirectResponse(url='/', status_code=303)
 
         if note_update.content is not None and len(note_update.content) <= 1000:
             note_update.content = content
@@ -155,10 +150,25 @@ def update_note_(request: Request, note_id: int, user: Annotated[UserDB, Depends
         session.commit()
         session.refresh(note_update)
 
-        return templates.TemplateResponse(f'note.html', {'request': request, 'note': note_update})
+        return RedirectResponse(url=f'/notes/{note_id}', status_code=303)
 
     raise HTTPException(detail='Could not validate credentials', status_code=404)
 
+
+# Note sharing
+@app.get('/add_friend/{friend_id}')
+def add_friend(user: Annotated[UserDB, Depends(get_logged_user)], friend_id: int, session: SessionDep):
+    friend = session.exec(select(UserDB).where(UserDB.id == friend_id)).first()
+    if user is not None and friend is not None:
+        relation = Friend(origin_id=user.id, target_id=friend.id, origin_user=user)
+        user.friends.append(relation)
+        session.add(relation)
+        session.commit()
+        session.refresh(relation)
+
+        return relation
+
+    raise HTTPException(status_code=404)
 
 # App routes
 @app.get('/update_note/{note_id}')
@@ -234,28 +244,7 @@ def home_page(request: Request, user: Annotated[UserDB, Depends(get_logged_user)
     return templates.TemplateResponse('home.html', {'request': request, 'notes': user.notes, 'is_logged': 'TRUE'})
 
 
-# Tests
-@app.post('/add_friend', response_model=Friend)
-def add_friend(user: Annotated[UserDB, Depends(get_logged_user)], friend_id: int, session: SessionDep):
-    friend = session.exec(select(UserDB).where(UserDB.id == friend_id)).first()
-
-    if friend is not None:
-        if friend.id in [k.target_id for k in user.friends]:
-            raise HTTPException(detail='Friendship already exists', status_code=404)
-
-        rel_obj = {'target_id': friend.id, 'origin_id': user.id}
-        rel_obj = Friend.model_validate(rel_obj)
-        user.friends.append(rel_obj)
-
-        session.add(rel_obj)
-        session.commit()
-        session.refresh(rel_obj)
-
-        return rel_obj
-
-    raise HTTPException(detail="Invalid friend id", status_code=404)
-
-
+# Testing methods
 @app.get('/view_friends', response_model=list[Friend])
 def view_friends(user: Annotated[UserDB, Depends(get_logged_user)]):
     return user.related_to

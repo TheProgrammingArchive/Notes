@@ -1,6 +1,5 @@
 from sqlmodel import SQLModel, Field, Relationship, Column, JSON, ForeignKey
 from typing import Union, Optional
-from typing_extensions import Self
 import datetime
 
 
@@ -13,16 +12,13 @@ class Notes(NoteBase, table=True):
     idx: Union[int, None] = Field(default=None, primary_key=True)
     user_id: Optional[int] = Field(default=None, foreign_key="userdb.id")
     user: Optional["UserDB"] = Relationship(back_populates="notes")
-    created_at: Union[str, None] = Field(
-        default_factory=lambda: datetime.datetime.now().strftime('%B %d, %Y at %I:%M %p'))
+    created_at: Union[str, None] = Field(default_factory=lambda: datetime.datetime.now().strftime('%B %d, %Y at %I:%M %p'))
 
 
 class Friend(SQLModel, table=True):
-    id: Union[int, None] = Field(default=None, primary_key=True)
-
-    origin_id: Optional[int] = Field(default=None, foreign_key="userdb.id")
-    target_id: Optional[int] = Field(default=None)
-    friends_of: Optional["UserDB"] = Relationship(back_populates="friends")
+    origin_id: Optional[int] = Field(default=None, foreign_key="userdb.id", primary_key=True)
+    target_id: Optional[int] = Field(default=None, primary_key=True)
+    origin_user: Optional["UserDB"] = Relationship(back_populates="friends")
 
 
 class UserBase(SQLModel):
@@ -33,7 +29,7 @@ class UserBase(SQLModel):
 class UserDB(UserBase, table=True):
     encrypted_pwd: str = Field(default=None)
     id: Union[int, None] = Field(default=None, primary_key=True)
-    friends: Union[None, list[Friend]] = Relationship(back_populates="friends_of")
+    friends: Union[None, list[Friend]] = Relationship(back_populates="origin_user")
 
     notes: Union[None, list[Notes]] = Relationship(back_populates="user")
 

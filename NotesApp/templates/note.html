@@ -110,7 +110,7 @@
         <div class="note-container">
             <div class="note-title"> {{ note.title }} </div>
             <div><p> {{ note.created_at}} </p></div><br>
-            <div class="note-content"> {{ note.content }}</div>
+            <textarea class="note-content" style="resize: horizontal; height: 150px" readonly="readonly">{{ note.content }}</textarea>
         </div>
     </div>
 </body>
