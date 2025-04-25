@@ -1,3 +1,5 @@
+import sqlite3
+
 from fastapi import FastAPI, Depends, status, Request, Form
 from fastapi.templating import Jinja2Templates
 from typing import Union, Annotated
@@ -161,14 +163,42 @@ def add_friend(user: Annotated[UserDB, Depends(get_logged_user)], friend_id: int
     friend = session.exec(select(UserDB).where(UserDB.id == friend_id)).first()
     if user is not None and friend is not None:
         relation = Friend(origin_id=user.id, target_id=friend.id, origin_user=user)
-        user.friends.append(relation)
-        session.add(relation)
-        session.commit()
-        session.refresh(relation)
+        try:
+            user.friends.append(relation)
+            session.add(relation)
+            session.commit()
+            session.refresh(relation)
+
+        except Exception:
+            raise HTTPException(detail='Already added as friend', status_code=404)
 
         return relation
 
     raise HTTPException(status_code=404)
+
+
+@app.post('/send_note', response_model=UserBase)
+def send_note(user: Annotated[UserDB, Depends(get_logged_user)], note_id: int, friend_id: int, session: SessionDep):
+    friend = session.exec(select(UserDB).where(UserDB.id == friend_id)).first()
+    if friend is not None:
+        if user.id not in [_.target_id for _ in friend.friends]:
+            return None
+
+        note = None
+        for notes in user.notes:
+            if notes.idx == note_id:
+                note = notes
+                break
+
+        note_copy = Notes(title=note.title, content=note.content, user_id=friend.id, user=friend)
+
+        friend.notes.append(note_copy)
+        session.add(note_copy)
+        session.commit()
+        session.refresh(note_copy)
+
+        return note_copy.user
+
 
 # App routes
 @app.get('/update_note/{note_id}')
@@ -247,7 +277,7 @@ def home_page(request: Request, user: Annotated[UserDB, Depends(get_logged_user)
 # Testing methods
 @app.get('/view_friends', response_model=list[Friend])
 def view_friends(user: Annotated[UserDB, Depends(get_logged_user)]):
-    return user.related_to
+    return user.friends
 
 
 @app.get('/view_all/', response_model=list[UserDB])

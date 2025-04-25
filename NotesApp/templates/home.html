@@ -109,6 +109,10 @@
 <body>
     <header class="navbar">
         <div class="navbar-brand"> Notes App v0.1 </div>
+        <form>
+            <label for="Search" style="align: right"></label>
+            <input type="text" name="Search" id="Search">
+        </form>
         <div class="navbar-buttons">
             {% if is_logged == 'TRUE' %}
                 <a href="/logout" class="btn" onclick="return confirm_logout();">Logout</a>
