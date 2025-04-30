@@ -158,9 +158,9 @@ def update_note_(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)]
 
 
 # Note sharing
-@app.get('/add_friend/{friend_id}')
-def add_friend(user: Annotated[UserDB, Depends(get_logged_user)], friend_id: int, session: SessionDep):
-    friend = session.exec(select(UserDB).where(UserDB.id == friend_id)).first()
+@app.get('/add_friend/{friend_username}')
+def add_friend(user: Annotated[UserDB, Depends(get_logged_user)], friend_username: str, session: SessionDep):
+    friend = session.exec(select(UserDB).where(UserDB.username == friend_username)).first()
     if user is not None and friend is not None:
         relation = Friend(origin_id=user.id, target_id=friend.id, origin_user=user)
         try:
@@ -243,7 +243,7 @@ def get_note(request: Request, note_id: int, user: Annotated[UserDB, Depends(get
 
 
 @app.get('/login')
-def login_test(request: Request, token: Annotated[str, Depends(cookie_scheme)], session: SessionDep):
+def login(request: Request, token: Annotated[str, Depends(cookie_scheme)], session: SessionDep):
     try:
         get_logged_user(token, session)
         return RedirectResponse(url='/')
@@ -272,6 +272,11 @@ def logout():
 @app.get('/', response_model=list[Notes])
 def home_page(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]):
     return templates.TemplateResponse('home.html', {'request': request, 'notes': user.notes, 'is_logged': 'TRUE'})
+
+
+@app.get('/manage_friends')
+def manage_friends(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]):
+    pass
 
 
 # Testing methods
