@@ -34,6 +34,7 @@
         }
 
         input[type="text"], textarea {
+            white-space: pre-wrap;
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
@@ -43,6 +44,7 @@
         }
 
         textarea {
+            white-space: pre-wrap;
             min-height: 200px;
             resize: vertical;
         }
@@ -70,10 +72,10 @@
         <form method="post" action="/create_note/">
            <div class="form-group">
                <label for="title"><p style="font-size:15px"> Title </p></label>
-               <input type="text" name="title" id="title" required><br><br>
+               <input type="text" name="title" id="title" maxlength="50" required><br><br>
 
                <label for="content"><p style="font-size:15px"> Content </p></label>
-               <textarea id="content" name="content" placeholder="Type your note here..."></textarea>
+               <textarea id="content" name="content" placeholder="Type your note here..." maxlength="1000"></textarea>
            </div>
            <button type="submit" class="submit-button"> Create note </button>
         </form>

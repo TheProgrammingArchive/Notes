@@ -12,13 +12,14 @@ class Notes(NoteBase, table=True):
     idx: Union[int, None] = Field(default=None, primary_key=True)
     user_id: Optional[int] = Field(default=None, foreign_key="userdb.id")
     user: Optional["UserDB"] = Relationship(back_populates="notes")
-    created_at: Union[str, None] = Field(
-        default_factory=lambda: datetime.datetime.now().strftime('%B %d, %Y at %I:%M %p'))
+
+    created_at: Union[str, None] = Field(default_factory=lambda: datetime.datetime.now().strftime('%B %d, %Y at %I:%M %p'))
 
 
-class NoteUpdate(NoteBase):
-    title: Union[str, None] = None
-    content: Union[str, None] = None
+class Friend(SQLModel, table=True):
+    origin_id: Optional[int] = Field(default=None, foreign_key="userdb.id", primary_key=True)
+    target_id: Optional[int] = Field(default=None, primary_key=True)
+    origin_user: Optional["UserDB"] = Relationship(back_populates="friends")
 
 
 class UserBase(SQLModel):
@@ -29,6 +30,7 @@ class UserBase(SQLModel):
 class UserDB(UserBase, table=True):
     encrypted_pwd: str = Field(default=None)
     id: Union[int, None] = Field(default=None, primary_key=True)
+    friends: Union[None, list[Friend]] = Relationship(back_populates="origin_user")
 
     notes: Union[None, list[Notes]] = Relationship(back_populates="user")
 
