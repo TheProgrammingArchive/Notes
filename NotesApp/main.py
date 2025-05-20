@@ -42,8 +42,11 @@ def handle_http_exception(request: Request, exc: HTTPException):
         return templates.TemplateResponse('home.html', {'request': request, 'detail': 'Requested note ID is invalid',
                                                         'is_logged': 'TRUE'})
 
+    elif exc.detail == 'Already added as friend' or exc.detail == 'User not found':
+        return RedirectResponse('/manage_friends', status_code=303)
+
     else:
-        return templates.TemplateResponse('login.html', {'request': request, 'detail': exc.detail})
+        return templates.TemplateResponse('home.html', {'request': request, 'detail': exc.detail})
 
 
 def validate_username(username: str, session: SessionDep):
@@ -158,10 +161,10 @@ def update_note_(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)]
 
 
 # Note sharing
-@app.get('/add_friend/{friend_username}')
-def add_friend(user: Annotated[UserDB, Depends(get_logged_user)], friend_username: str, session: SessionDep):
+@app.post('/add_friend')
+def add_friend(friend_username: Annotated[str, Form()], user: Annotated[UserDB, Depends(get_logged_user)], session: SessionDep):
     friend = session.exec(select(UserDB).where(UserDB.username == friend_username)).first()
-    if user is not None and friend is not None:
+    if user is not None and friend is not None and friend is not user:
         relation = Friend(origin_id=user.id, target_id=friend.id, origin_user=user)
         try:
             user.friends.append(relation)
@@ -172,9 +175,23 @@ def add_friend(user: Annotated[UserDB, Depends(get_logged_user)], friend_usernam
         except Exception:
             raise HTTPException(detail='Already added as friend', status_code=404)
 
-        return relation
+        return relation.target_id
 
-    raise HTTPException(status_code=404)
+    raise HTTPException(detail='User not found', status_code=404)
+
+
+@app.post('/remove_friend/{friend_username}')
+def remove_friend(user: Annotated[UserDB, Depends(get_logged_user)], friend_username: str, session: SessionDep):
+    friend_id = session.exec(select(UserDB).where(UserDB.username == friend_username)).first().id
+    for friend in user.friends:
+        if friend.target_id == friend_id:
+            user.friends.remove(friend)
+            session.delete(friend)
+            session.commit()
+
+            return RedirectResponse('/manage_friends', status_code=303)
+
+    return None
 
 
 @app.post('/send_note', response_model=UserBase)
@@ -197,7 +214,8 @@ def send_note(user: Annotated[UserDB, Depends(get_logged_user)], note_id: int, f
         session.commit()
         session.refresh(note_copy)
 
-        return note_copy.user
+        # return note_copy.user
+    return None
 
 
 # App routes
@@ -207,12 +225,15 @@ def update_note(request: Request, note_id: int, user: Annotated[UserDB, Depends(
     if user:
         return templates.TemplateResponse('update_note.html', {'request': request, 'note': note})
 
+    return None
+
 
 @app.get('/new_note')
 def new_note(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]):
     if user:
         return templates.TemplateResponse('new_note.html', {'request': request})
 
+    return None
 
 @app.get('/remove_note/{note_id}')
 def remove_note(note_id: int, user: Annotated[UserDB, Depends(get_logged_user)], session: SessionDep):
@@ -275,8 +296,14 @@ def home_page(request: Request, user: Annotated[UserDB, Depends(get_logged_user)
 
 
 @app.get('/manage_friends')
-def manage_friends(request: Request, user: Annotated[UserDB, Depends(get_logged_user)]):
-    pass
+def manage_friends(request: Request, user: Annotated[UserDB, Depends(get_logged_user)], session: SessionDep):
+    friends = []
+    for friend in user.friends:
+        friend_details = session.exec(select(UserDB).where(UserDB.id == friend.target_id)).first()
+        friends.append({'username': friend_details.username, 'email': friend_details.email})
+
+
+    return templates.TemplateResponse('friends.html', {'request': request, 'friends': friends})
 
 
 # Testing methods
