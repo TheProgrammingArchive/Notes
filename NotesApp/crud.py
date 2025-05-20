@@ -1,4 +1,4 @@
-from sqlmodel import select, create_engine, SQLModel, Session, select
+from sqlmodel import create_engine, SQLModel, Session
 
 
 sqlite_file_name = 'database.db'
