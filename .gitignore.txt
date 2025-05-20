@@ -1,5 +1,0 @@
-.venv
-.idea
-NotesApp\__pycache__
-NotesApp\.env
-NotesApp\database
