@@ -46,7 +46,7 @@ def handle_http_exception(request: Request, exc: HTTPException):
         return RedirectResponse('/manage_friends', status_code=303)
 
     else:
-        return templates.TemplateResponse('home.html', {'request': request, 'detail': exc.detail})
+        return templates.TemplateResponse('login.html', {'request': request, 'detail': exc.detail})
 
 
 def validate_username(username: str, session: SessionDep):
@@ -67,6 +67,18 @@ def get_note_id(note_id: int, user: UserDB) -> (int, Notes):
             return k, note
 
     return None
+
+
+
+def is_send_allowed(target_user: UserDB, origin_user: UserDB) -> bool:
+    allow = False
+    for friends in target_user.friends:
+        if friends.target_id == origin_user.id:
+            allow = True
+            break
+
+    return allow
+
 
 
 @app.post('/create_user', response_model=UserBase)
@@ -175,7 +187,7 @@ def add_friend(friend_username: Annotated[str, Form()], user: Annotated[UserDB, 
         except Exception:
             raise HTTPException(detail='Already added as friend', status_code=404)
 
-        return relation.target_id
+        return RedirectResponse('/add_friend')
 
     raise HTTPException(detail='User not found', status_code=404)
 
@@ -194,28 +206,27 @@ def remove_friend(user: Annotated[UserDB, Depends(get_logged_user)], friend_user
     return None
 
 
-@app.post('/send_note', response_model=UserBase)
-def send_note(user: Annotated[UserDB, Depends(get_logged_user)], note_id: int, friend_id: int, session: SessionDep):
-    friend = session.exec(select(UserDB).where(UserDB.id == friend_id)).first()
-    if friend is not None:
-        if user.id not in [_.target_id for _ in friend.friends]:
-            return None
+@app.get('/send_note')
+def send_note(user: Annotated[UserDB, Depends(get_logged_user)], target: str, note_id: int, session: SessionDep):
+    target_user = session.exec(select(UserDB).where(UserDB.username == target)).first()
+    if target_user is not None and is_send_allowed(target_user=target_user, origin_user=user):
+        note_to_send = get_note_id(note_id, user)
 
-        note = None
-        for notes in user.notes:
-            if notes.idx == note_id:
-                note = notes
-                break
+        if note_to_send is None:
+            return 'Inaccessible note'
 
-        note_copy = Notes(title=note.title, content=note.content, user_id=friend.id, user=friend)
+        note_to_send = note_to_send[1]
+        copied_note = {'title': note_to_send.title, 'content': note_to_send.content, 'user_id': target_user.id, 'user': target_user, 'shared': user.username}
+        copied_note = Notes.model_validate(copied_note)
 
-        friend.notes.append(note_copy)
-        session.add(note_copy)
+        target_user.notes.append(copied_note)
+        session.add(copied_note)
         session.commit()
-        session.refresh(note_copy)
+        session.refresh(copied_note)
 
-        # return note_copy.user
-    return None
+        return RedirectResponse(f'notes/{note_id}')
+
+    return 'You are not allowed to send notes to that user, as you are not part of their friends list'
 
 
 # App routes

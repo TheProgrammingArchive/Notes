@@ -43,6 +43,7 @@
             border-radius: 4px;
             font-size: 14px;
             transition: background-color 0.2s ease-in-out;
+            cursor: pointer;
         }
 
         .btn:hover {
@@ -52,7 +53,6 @@
         .btn-register:hover {
             background-color: #1e7e34;
         }
-
 
         .content-wrapper {
             display: flex;
@@ -78,7 +78,7 @@
             font-size: 24px;
             font-weight: bold;
             color: #333;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
 
         .note-content {
@@ -87,6 +87,40 @@
             line-height: 1.6;
             overflow-wrap: break-word
         }
+
+        /* Sharing bar styling */
+        .sharing-bar {
+            background-color: #f5f5f5;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .sharing-bar input {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            flex-grow: 1;
+            max-width: 200px;
+            font-size: 14px;
+        }
+
+        .sharing-bar input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .note-meta {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
     </style>
 
     <script>
@@ -94,8 +128,16 @@
             var conf = confirm("Delete note?");
             return conf;
         }
-    </script>
 
+        function shareNote() {
+            const username = document.getElementById('share-username').value.trim();
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+            window.location.href = `/send_note?note_id={{ note.idx }}&target=${encodeURIComponent(username)}`;
+        }
+    </script>
 </head>
 <body>
     <div class="navbar">
@@ -109,7 +151,20 @@
     <div class="content-wrapper">
         <div class="note-container">
             <div class="note-title"> {{ note.title }} </div>
-            <div><p> {{ note.created_at}} </p></div><br>
+
+            <div class="sharing-bar">
+                <span style="font-weight: bold;">Share with:</span>
+                <input type="text" id="share-username" placeholder="Enter username">
+                <button onclick="shareNote()" class="btn">Share</button>
+            </div>
+
+            <div class="note-meta">
+                <p>Created: {{ note.created_at }}</p>
+                {% if note.shared %}
+                    <p> Shared by: {{ note.shared }}</p>
+                {% endif %}
+            </div>
+
             <textarea class="note-content" style="resize: horizontal; height: 150px" readonly="readonly">{{ note.content }}</textarea>
         </div>
     </div>

@@ -12,6 +12,7 @@ class Notes(NoteBase, table=True):
     idx: Union[int, None] = Field(default=None, primary_key=True)
     user_id: Optional[int] = Field(default=None, foreign_key="userdb.id")
     user: Optional["UserDB"] = Relationship(back_populates="notes")
+    shared: Union[str, None] = Field(default=None)
 
     created_at: Union[str, None] = Field(default_factory=lambda: datetime.datetime.now().strftime('%B %d, %Y at %I:%M %p'))
 
