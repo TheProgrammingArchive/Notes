@@ -16,4 +16,3 @@ pip install -r requirements.txt
 ```shell
 openssl rand -hex 32
 ```
-<br>
