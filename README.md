@@ -3,16 +3,26 @@
 ## Description
 A simple web-app to create, edit, delete and share notes with your friends! Made with FastAPI 
 
-<h3> Setup: </h3>
+## Setup
 1. Clone the repository<br>
-2. Make sure to install all the dependencies listed in requirements.txt within the project directory<br>
+2. Make sure to install all the dependencies listed in requirements.txt within the project directory
+   ```shell
+    pip install -r requirements.txt
+    ```
+4. Create a .env file within the \NotesApp directory, then copy the output of the following command
+     ```shell
+    openssl rand -hex 32
+    ```
+    Within the .env file, write the following (remove the angle braces) and replace OUTPUT with the above
+   ```shell
+   SECRET_KEY=<OUTPUT>
+   ```
+6. Run the fastapi server by changing your current working directory into NotesApp
+   ```shell
+   cd NotesApp/
+   fastapi dev main.py
+   ```
+7. You've successfully started the app!
+   
+## Docker
 
-```shell
-pip install -r requirements.txt
-```
-<br>
-3. Create a .env file within the \NotesApp directory, then paste the output of the following command into that file
-
-```shell
-openssl rand -hex 32
-```
