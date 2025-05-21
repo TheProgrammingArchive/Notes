@@ -17,4 +17,3 @@ pip install -r requirements.txt
 openssl rand -hex 32
 ```
 <br>
-4. Change your working directory to NotesApp\
