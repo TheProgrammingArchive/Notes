@@ -35,3 +35,30 @@ A simple web-app to create, edit, delete and share notes with your friends! Made
    ```shell
    docker run -d -name container_name -p 80:80 img_name
    ```
+## File structure
+```
+Notes
+    │   .dockerignore
+    │   .gitignore
+    │   Dockerfile
+    │   README.md
+    │   requirements.txt
+    │
+    └───NotesApp
+        │   .env
+        │   crud.py
+        │   database.db
+        │   main.py
+        │   models.py
+        │   security.py
+        │   __init__.py
+        │
+        └───templates
+                friends.html
+                home.html
+                login.html
+                new_note.html
+                note.html
+                register.html
+                update_note.html
+```
