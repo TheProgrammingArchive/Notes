@@ -30,7 +30,7 @@ A simple web-app to create, edit, delete and share notes with your friends! Made
    ```shell
    docker build -t img_name .
    ```
-   If you would like to have your current database on the container, edit the .dockerignore file and remove NotesApp/database.db before building the image
+   If you would like to have your current database on the container, edit the .dockerignore file and remove <b>'NotesApp/database.db'</b> before building the image
 3. Run the docker container
    ```shell
    docker run -d -name container_name -p 80:80 img_name
