@@ -25,7 +25,7 @@ A simple web-app to create, edit, delete and share notes with your friends! Made
 7. You've successfully started the app!
    
 ## Docker
-1. If you would like to run the app off of a container, follow all setup steps from 1-5.
+1. If you would like to run the app off of a container, follow all setup steps from 1-3.
 2. Change your working directory to Notes/ and build the docker image
    ```shell
    docker build -t img_name .
